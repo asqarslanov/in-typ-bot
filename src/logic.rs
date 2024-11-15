@@ -74,7 +74,15 @@ async fn compile(filename_typ: &Path, filename_png: &Path, quality: Quality) -> 
     let output = filename_png.to_str().expect(convert_err_msg);
 
     let output = Command::new("typst")
-        .args(["compile", "--ppi", ppi, input, output])
+        .args([
+            "compile",
+            "--diagnostic-format",
+            "short",
+            "--ppi",
+            ppi,
+            input,
+            output,
+        ])
         .output()
         .await?;
 
