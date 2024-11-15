@@ -1,0 +1,21 @@
+[package]
+name = "in-typ-bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.93"
+dotenvy = "0.15.7"
+dotenvy_macro = "0.15.7"
+teloxide = "0.13.0"
+tokio = { version = "1.41.1", features = [
+  "macros",
+  "process",
+  "rt-multi-thread",
+] }
+uuid = { version = "1.11.0", features = ["fast-rng"] }
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+nursery = "warn"
