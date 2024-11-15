@@ -33,12 +33,14 @@ pub async fn render(contents: &str, quality: Quality) -> io::Result<Result<PathB
                 .expect("the typst CLI should output valid utf-8 to stderr")
                 .lines()
                 .map(|line| {
-                    line.splitn(3, |c: char| c.is_ascii_whitespace())
+                    let (location_raw, _, message) = line
+                        .splitn(3, |c: char| c.is_ascii_whitespace())
                         .collect_tuple::<(_, _, _)>()
-                        .map(|(location_raw, _, message)| {
-                            format!("{} {message}", process_location(location_raw))
-                        })
-                        .unwrap()
+                        .expect(
+                            "typst should output at least three tokens separated by whitespace",
+                        );
+
+                    format!("{} {message}", process_location(location_raw))
                 })
                 .collect::<Box<[_]>>()
                 .join("\n")
