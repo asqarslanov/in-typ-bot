@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Output;
 
+use itertools::Itertools;
 use tokio::fs::{self, File, OpenOptions};
 use tokio::io::{self, AsyncWriteExt};
 use tokio::process::Command;
@@ -30,9 +31,29 @@ pub async fn render(contents: &str, quality: Quality) -> io::Result<Result<PathB
         .ok_or_else(|| {
             String::from_utf8(output.stderr)
                 .expect("the typst CLI should output valid utf-8 to stderr")
+                .lines()
+                .map(|line| {
+                    line.splitn(3, |c: char| c.is_ascii_whitespace())
+                        .collect_tuple::<(_, _, _)>()
+                        .map(|(location_raw, _, message)| {
+                            format!("{} {message}", process_location(location_raw))
+                        })
+                        .unwrap()
+                })
+                .collect::<Box<[_]>>()
+                .join("\n")
         });
 
     Ok(result)
+}
+
+fn process_location(location_raw: &str) -> String {
+    let mut tokens = location_raw.split(':').skip(1);
+
+    let line = tokens.next().unwrap();
+    let column = tokens.next().unwrap();
+
+    format!("{}:{}:", line.parse::<u32>().unwrap() - 1, column)
 }
 
 fn gen_filenames() -> (PathBuf, PathBuf) {
