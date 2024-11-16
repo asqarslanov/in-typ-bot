@@ -30,9 +30,26 @@ pub async fn start(bot: Bot, msg: Message) {
 }
 
 pub async fn help(bot: Bot, msg: Message) {
+    let inline_snippet = html::code_inline("@InTypBot $2 + 2 = 5$");
+    let clarification = html::italic("…of course, you can write any other Typst code.");
+
+    let text = formatdoc! {"
+        I’m a bot that can render Typst markup in Telegram chats.
+
+        If you’re not familiar with Typst syntax, refer to their official documentation: typst.app/docs/.
+
+        To use me in inline mode, type the following inside any chat:
+        {inline_snippet}
+        {clarification}
+
+        Or you can just use me in chat mode by sending me messages directly.
+
+        Source code: github.om/asqarslanov/in-type-bot
+        Author: @AsqArslanov\
+    "};
+
     let _ = bot
-        .send_message(msg.chat.id, "A help message should go here…")
+        .send_message(msg.chat.id, text)
         .parse_mode(ParseMode::Html)
-        // .parse_mode(ParseMode::Html)
         .await;
 }
