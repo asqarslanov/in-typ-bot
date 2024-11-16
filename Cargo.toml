@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 dotenvy = "0.15.7"
 dotenvy_macro = "0.15.7"
+indoc = "2.0.5"
 itertools = "0.13.0"
 svg = "0.18.0"
 teloxide = { version = "0.13.0", features = ["macros"] }
