@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use std::process::Output;
 
 use async_writeln::AsyncWriteln;
+use filename::{Filename, TMP_DIR};
 use itertools::Itertools;
 use svg::node::element::tag::Type;
 use svg::parser::Event;
@@ -9,11 +10,9 @@ use thiserror::Error;
 use tokio::fs::{self, File, OpenOptions};
 use tokio::io::{self};
 use tokio::process::Command;
-use uuid::Uuid;
 
 mod async_writeln;
-
-const TMP_DIR: &str = "tmp";
+mod filename;
 
 #[derive(Error, Debug)]
 pub enum RenderError {
@@ -31,37 +30,38 @@ pub enum RenderError {
 }
 
 pub async fn render(contents: &str) -> Result<PathBuf, RenderError> {
-    let (filename_typ, filename_svg, filename_png) = gen_filenames();
-    let mut file = create_file(&filename_typ).await?;
+    let path = Filename::new();
+
+    let mut file = create_file(&path.typ()).await?;
 
     setup_page(&mut file).await?;
     file.writeln(contents.as_bytes()).await?;
 
-    let svg_output = compile_svg(&filename_typ, &filename_svg).await?;
+    let svg_output = compile_svg(&path.typ(), &path.svg()).await?;
     if svg_output.status.success() {
         let (
             Event::Tag("svg", Type::Start, _),
             Event::Tag("path", Type::Empty, _),
             Event::Tag("g", Type::Empty, _),
             Event::Tag("svg", Type::End, _),
-        ) = svg::open(&filename_svg, &mut String::new())?
+        ) = svg::open(path.svg(), &mut String::new())?
             .take(4)
             .collect_tuple::<(_, _, _, _)>()
             .expect("svg files should contain at least 4 tags")
         else {
-            fs::remove_file(filename_svg).await?;
+            fs::remove_file(path.svg()).await?;
             return Err(RenderError::EmptyDocument);
         };
-        fs::remove_file(filename_svg).await?;
+        fs::remove_file(path.svg()).await?;
     }
 
-    let output = compile(&filename_typ, &filename_png).await?;
-    fs::remove_file(filename_typ).await?;
+    let output = compile(&path.typ(), &path.png()).await?;
+    fs::remove_file(path.typ()).await?;
 
     output
         .status
         .success()
-        .then_some(filename_png)
+        .then_some(path.png())
         .ok_or_else(|| {
             let err_msg_full = String::from_utf8(output.stderr)
                 .expect("the typst CLI should output valid utf-8 to stderr");
@@ -92,18 +92,6 @@ fn parse_location(raw: &str) -> Option<(u32, u32)> {
     let column = column_raw.parse::<u32>().ok()?;
 
     Some((line, column))
-}
-
-fn gen_filenames() -> (PathBuf, PathBuf, PathBuf) {
-    let uuid = Uuid::new_v4();
-    let filename_raw = format!("{TMP_DIR}/{uuid}");
-
-    let filename_no_ext = Path::new(&filename_raw);
-    let filename_typ = filename_no_ext.with_extension("typ");
-    let filename_svg = filename_no_ext.with_extension("svg");
-    let filename_png = filename_no_ext.with_extension("png");
-
-    (filename_typ, filename_svg, filename_png)
 }
 
 async fn create_file(filename_typ: &Path) -> io::Result<File> {
