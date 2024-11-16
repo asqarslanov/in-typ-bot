@@ -1,5 +1,6 @@
 use std::iter;
 
+use indoc::formatdoc;
 use itertools::Itertools;
 use teloxide::prelude::*;
 use teloxide::types::{
@@ -70,21 +71,28 @@ pub async fn message(bot: Bot, msg: Message) -> Result<(), RequestError> {
     Ok(())
 }
 
-fn generate_error_text(source: &str, errors: &[ErrorDetails], formatting: bool) -> String {
+fn generate_error_text(source_code: &str, errors: &[ErrorDetails], formatting: bool) -> String {
     if formatting {
-        let errors_text = errors
+        let errors_formatted = errors
             .iter()
             .map(|err| {
                 let (line, column) = err.coordinates;
                 let coordinates_text =
                     html::bold(&format!("Error on Line {line} : Column {column}"));
                 let error_text = html::code_inline(&err.message);
-                format!("{coordinates_text}\n{error_text}")
+                formatdoc! {"
+                    {coordinates_text}
+                    {error_text}\
+                "}
             })
             .join("\n\n");
 
-        let source = html::code_block_with_lang(source, "typst");
-        format!("{source}\n{errors_text}")
+        let source_code_formatted = html::code_block_with_lang(source_code, "typst");
+        formatdoc! {"
+            {source_code_formatted}
+
+            {errors_formatted}\
+        "}
     } else {
         let error = errors
             .first()
