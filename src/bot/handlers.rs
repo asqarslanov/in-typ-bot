@@ -12,7 +12,9 @@ use uuid::Uuid;
 use crate::logic::{self};
 
 pub async fn process_message(bot: Bot, msg: Message) -> Result<(), RequestError> {
-    let contents = msg.text().expect("message contains no text");
+    let Some(contents) = msg.text() else {
+        return Ok(());
+    };
 
     let reply_msg = bot
         .send_message(msg.chat.id, "Wait a second…")
