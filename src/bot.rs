@@ -1,6 +1,6 @@
 use dotenvy_macro::dotenv;
 use teloxide::dispatching::UpdateHandler;
-use teloxide::prelude::*;
+use teloxide::{prelude::*, RequestError};
 
 mod handlers;
 
@@ -24,7 +24,7 @@ pub async fn start() {
     .await;
 }
 
-fn schema() -> UpdateHandler<()> {
+fn schema() -> UpdateHandler<RequestError> {
     let inline_handler =
         Update::filter_inline_query().branch(dptree::endpoint(handlers::process_inline));
 
