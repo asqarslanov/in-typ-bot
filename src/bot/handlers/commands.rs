@@ -44,7 +44,7 @@ pub async fn help(bot: Bot, msg: Message) {
 
         Or you can just use me in chat mode by sending me messages directly.
 
-        Source code: github.om/asqarslanov/in-type-bot
+        Source code: github.com/asqarslanov/in-typ-bot
         Author: @AsqArslanov\
     "};
 
