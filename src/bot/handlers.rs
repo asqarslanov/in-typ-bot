@@ -1,17 +1,34 @@
 use std::iter;
 
+use teloxide::prelude::*;
 use teloxide::types::{
     InlineQueryResult, InlineQueryResultArticle, InlineQueryResultCachedPhoto, InputFile,
     InputMedia, InputMediaPhoto, InputMessageContent, InputMessageContentText, ParseMode,
 };
 use teloxide::utils::markdown;
-use teloxide::{prelude::*, RequestError};
+use teloxide::RequestError;
 use tokio::fs;
 use uuid::Uuid;
 
+use super::Command;
 use crate::logic::{self};
 
-pub async fn process_message(bot: Bot, msg: Message) -> Result<(), RequestError> {
+mod commands;
+
+pub async fn command(bot: Bot, msg: Message, cmd: Command) -> Result<(), RequestError> {
+    match cmd {
+        Command::Start => {
+            commands::start(bot, msg).await;
+            Ok(())
+        }
+        Command::Help => {
+            commands::help(bot, msg).await;
+            Ok(())
+        }
+    }
+}
+
+pub async fn message(bot: Bot, msg: Message) -> Result<(), RequestError> {
     let Some(contents) = msg.text() else {
         return Ok(());
     };
@@ -73,12 +90,12 @@ fn generate_error_text(
     }
 }
 
-pub async fn process_inline(
+pub async fn inline_query(
     bot: Bot,
-    query: InlineQuery,
+    qry: InlineQuery,
     cache_chat: ChatId,
 ) -> Result<(), RequestError> {
-    let contents = query.query;
+    let contents = qry.query;
 
     match logic::render(&contents).await {
         Ok(path) => {
@@ -89,7 +106,7 @@ pub async fn process_inline(
 
             let _ = bot
                 .answer_inline_query(
-                    query.id,
+                    qry.id,
                     iter::once(InlineQueryResult::CachedPhoto(
                         InlineQueryResultCachedPhoto::new(
                             Uuid::new_v4().simple().to_string(),
@@ -120,7 +137,7 @@ pub async fn process_inline(
 
                 let _ = bot
                     .answer_inline_query(
-                        query.id,
+                        qry.id,
                         iter::once(InlineQueryResult::Article(InlineQueryResultArticle::new(
                             Uuid::new_v4().simple().to_string(),
                             not_formatted,

@@ -1,5 +1,6 @@
 use dotenvy_macro::dotenv;
 use teloxide::dispatching::UpdateHandler;
+use teloxide::macros::BotCommands;
 use teloxide::{prelude::*, RequestError};
 
 mod handlers;
@@ -24,14 +25,25 @@ pub async fn start() {
     .await;
 }
 
+#[derive(BotCommands, Clone)]
+#[command(rename_rule = "snake_case")]
+enum Command {
+    Start,
+    Help,
+}
+
 fn schema() -> UpdateHandler<RequestError> {
     let inline_handler =
-        Update::filter_inline_query().branch(dptree::endpoint(handlers::process_inline));
+        Update::filter_inline_query().branch(dptree::endpoint(handlers::inline_query));
 
-    let message_handler =
-        Update::filter_message().branch(dptree::endpoint(handlers::process_message));
+    let command_handler = Update::filter_message()
+        .filter_command::<Command>()
+        .branch(dptree::endpoint(handlers::command));
+
+    let message_handler = Update::filter_message().branch(dptree::endpoint(handlers::message));
 
     dptree::entry()
-        .branch(message_handler)
         .branch(inline_handler)
+        .branch(command_handler)
+        .branch(message_handler)
 }
