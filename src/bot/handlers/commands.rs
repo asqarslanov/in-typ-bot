@@ -14,7 +14,7 @@ pub async fn start(bot: Bot, msg: Message) {
     );
     let text = formatdoc! {"
         Hello! I am @InTypBot!
-        Send me some Typst code and I will render it here.
+        Send me some Typst code, and I will render it here.
 
         For example:
         {snippet}
