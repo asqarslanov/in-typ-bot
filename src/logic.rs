@@ -21,11 +21,44 @@ pub enum RenderError {
     #[error("nothing to render")]
     EmptyDocument,
 
-    #[error("{message}")]
-    InvalidSyntax {
-        coordinates: (u32, u32),
-        message: Box<str>,
-    },
+    #[error("invalid syntax")]
+    InvalidSyntax(Box<[ErrorDetails]>),
+}
+
+#[derive(Debug)]
+pub struct ErrorDetails {
+    pub coordinates: (u32, u32),
+    pub message: Box<str>,
+}
+
+impl From<&str> for ErrorDetails {
+    fn from(value: &str) -> Self {
+        let (location_raw, _, message) = value
+            .splitn(3, |c: char| c.is_ascii_whitespace())
+            .collect_tuple::<(_, _, _)>()
+            .expect("typst should output at least three tokens separated by whitespace");
+
+        let message = Box::from(message);
+        let coordinates = parse_location(location_raw)
+            .expect("typst should output coordinates in a predetermined format");
+
+        Self {
+            coordinates,
+            message,
+        }
+    }
+}
+
+fn extract_error(command_output: Output) -> RenderError {
+    let err_text = String::from_utf8(command_output.stderr)
+        .expect("the typst CLI should output valid utf-8 to stderr");
+
+    let processed = err_text
+        .lines()
+        .map(ErrorDetails::from)
+        .collect::<Box<[_]>>();
+
+    RenderError::InvalidSyntax(processed)
 }
 
 pub async fn render(contents: &str) -> Result<PathBuf, RenderError> {
@@ -150,24 +183,5 @@ fn process_output_png(
         Ok(path_to_file.png())
     } else {
         Err(extract_error(command_output))
-    }
-}
-
-fn extract_error(command_output: Output) -> RenderError {
-    let err_msg_full = String::from_utf8(command_output.stderr)
-        .expect("the typst CLI should output valid utf-8 to stderr");
-
-    let (location_raw, _, message) = err_msg_full
-        .splitn(3, |c: char| c.is_ascii_whitespace())
-        .collect_tuple::<(_, _, _)>()
-        .expect("typst should output at least three tokens separated by whitespace");
-
-    let message = Box::from(message);
-    let coordinates = parse_location(location_raw)
-        .expect("typst should output coordinates in a predetermined format");
-
-    RenderError::InvalidSyntax {
-        coordinates,
-        message,
     }
 }
