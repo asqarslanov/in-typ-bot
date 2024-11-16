@@ -135,7 +135,7 @@ async fn compile(
             "--diagnostic-format",
             "short",
             "--ppi",
-            "300",
+            "400",
             to_str(&filename_in),
             to_str(&filename_out),
         ])
