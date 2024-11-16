@@ -1,8 +1,5 @@
 use dotenvy_macro::dotenv;
-use teloxide::dispatching::{
-    dialogue::{self, InMemStorage},
-    UpdateHandler,
-};
+use teloxide::dispatching::UpdateHandler;
 use teloxide::prelude::*;
 
 mod handlers;
@@ -18,14 +15,11 @@ pub async fn start() {
     );
 
     Box::pin(
-        Dispatcher::builder(bot, {
-            let _ = schema();
-            Update::filter_inline_query().branch(dptree::endpoint(handlers::process_inline))
-        })
-        .dependencies(dptree::deps![cache_chat, InMemStorage::<()>::new()])
-        .enable_ctrlc_handler()
-        .build()
-        .dispatch(),
+        Dispatcher::builder(bot, schema())
+            .dependencies(dptree::deps![cache_chat])
+            .enable_ctrlc_handler()
+            .build()
+            .dispatch(),
     )
     .await;
 }
@@ -37,7 +31,7 @@ fn schema() -> UpdateHandler<()> {
     let message_handler =
         Update::filter_message().branch(dptree::endpoint(handlers::process_message));
 
-    dialogue::enter::<Update, InMemStorage<()>, _, _>()
+    dptree::entry()
         .branch(message_handler)
         .branch(inline_handler)
 }
