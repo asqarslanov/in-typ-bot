@@ -9,7 +9,7 @@ use teloxide::utils::markdown;
 use tokio::fs;
 use uuid::Uuid;
 
-use crate::logic::{self, Quality};
+use crate::logic::{self, Quality, TypstError};
 
 pub async fn process_message(bot: Bot, msg: Message, cache_chat: ChatId) -> anyhow::Result<()> {
     let contents = msg.text().expect("message contains no text");
@@ -25,8 +25,8 @@ pub async fn process_message(bot: Bot, msg: Message, cache_chat: ChatId) -> anyh
             fs::remove_file(path).await?;
             bot.delete_message(cache_chat, cached_msg.id).await?;
         }
-        Err(ref err_msg) => {
-            let text = markdown::code_block_with_lang(err_msg, "stderr");
+        Err(err) => {
+            let text = generate_error_text(&contents, &err, true);
             bot.send_message(msg.chat.id, text)
                 .parse_mode(ParseMode::MarkdownV2)
                 .await?;
@@ -34,6 +34,19 @@ pub async fn process_message(bot: Bot, msg: Message, cache_chat: ChatId) -> anyh
     }
 
     Ok(())
+}
+
+fn generate_error_text(source: &str, error: &TypstError, formatting: bool) -> String {
+    let (line, column) = error.coordinates;
+
+    if formatting {
+        let source = markdown::code_block_with_lang(source, "typst");
+        let coordinates_text = markdown::bold(&format!("Error on Line {line} : Column {column}"));
+        let error_text = markdown::code_inline(&error.to_string());
+        format!("{source}\n{coordinates_text}\n{error_text}")
+    } else {
+        format!("{line}:{column}: {error}")
+    }
 }
 
 pub async fn process_inline(
@@ -69,15 +82,17 @@ pub async fn process_inline(
             fs::remove_file(path).await?;
             bot.delete_message(cache_chat, cached_msg.id).await?;
         }
-        Err(ref err_msg) => {
-            let text = markdown::code_block_with_lang(err_msg, "stderr");
+        Err(err) => {
+            let not_formatted = generate_error_text(&contents, &err, false);
+            let formatted = generate_error_text(&contents, &err, true);
+
             bot.answer_inline_query(
                 query.id,
                 iter::once(InlineQueryResult::Article(InlineQueryResultArticle::new(
                     Uuid::new_v4().simple().to_string(),
-                    "yo",
+                    not_formatted,
                     InputMessageContent::Text(
-                        InputMessageContentText::new(text).parse_mode(ParseMode::MarkdownV2),
+                        InputMessageContentText::new(formatted).parse_mode(ParseMode::MarkdownV2),
                     ),
                 ))),
             )

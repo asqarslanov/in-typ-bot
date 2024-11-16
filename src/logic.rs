@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use std::process::Output;
 
 use itertools::Itertools;
+use thiserror::Error;
 use tokio::fs::{self, File, OpenOptions};
 use tokio::io::{self, AsyncWriteExt};
 use tokio::process::Command;
@@ -14,7 +15,14 @@ pub enum Quality {
     High,
 }
 
-pub async fn render(contents: &str, quality: Quality) -> io::Result<Result<PathBuf, String>> {
+#[derive(Error, Debug)]
+#[error("{message}")]
+pub struct TypstError {
+    pub coordinates: (u32, u32),
+    message: Box<str>,
+}
+
+pub async fn render(contents: &str, quality: Quality) -> io::Result<Result<PathBuf, TypstError>> {
     let (filename_typ, filename_png) = gen_filenames();
     let mut file = create_file(&filename_typ).await?;
 
@@ -29,33 +37,37 @@ pub async fn render(contents: &str, quality: Quality) -> io::Result<Result<PathB
         .success()
         .then_some(filename_png)
         .ok_or_else(|| {
-            String::from_utf8(output.stderr)
-                .expect("the typst CLI should output valid utf-8 to stderr")
-                .lines()
-                .map(|line| {
-                    let (location_raw, _, message) = line
-                        .splitn(3, |c: char| c.is_ascii_whitespace())
-                        .collect_tuple::<(_, _, _)>()
-                        .expect(
-                            "typst should output at least three tokens separated by whitespace",
-                        );
+            let err_msg_full = String::from_utf8(output.stderr)
+                .expect("the typst CLI should output valid utf-8 to stderr");
 
-                    format!("{} {message}", process_location(location_raw))
-                })
-                .collect::<Box<[_]>>()
-                .join("\n")
+            let (location_raw, _, message) = err_msg_full
+                .splitn(3, |c: char| c.is_ascii_whitespace())
+                .collect_tuple::<(_, _, _)>()
+                .expect("typst should output at least three tokens separated by whitespace");
+
+            let message = Box::from(message);
+            let coordinates = parse_location(location_raw)
+                .expect("typst should output coordinates in a predetermined format");
+
+            TypstError {
+                coordinates,
+                message,
+            }
         });
 
     Ok(result)
 }
 
-fn process_location(location_raw: &str) -> String {
-    let mut tokens = location_raw.split(':').skip(1);
+fn parse_location(raw: &str) -> Option<(u32, u32)> {
+    let mut tokens = raw.split(':').skip(1);
 
-    let line = tokens.next().unwrap();
-    let column = tokens.next().unwrap();
+    let line_raw = tokens.next()?;
+    let column_raw = tokens.next()?;
 
-    format!("{}:{}:", line.parse::<u32>().unwrap() - 1, column)
+    let line = line_raw.parse::<u32>().ok()? - 1;
+    let column = column_raw.parse::<u32>().ok()?;
+
+    Some((line, column))
 }
 
 fn gen_filenames() -> (PathBuf, PathBuf) {
