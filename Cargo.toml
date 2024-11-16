@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.93"
 dotenvy = "0.15.7"
 dotenvy_macro = "0.15.7"
 itertools = "0.13.0"

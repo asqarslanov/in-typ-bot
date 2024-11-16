@@ -30,7 +30,7 @@ pub async fn start() {
     .await;
 }
 
-fn schema() -> UpdateHandler<anyhow::Error> {
+fn schema() -> UpdateHandler<()> {
     let inline_handler =
         Update::filter_inline_query().branch(dptree::endpoint(handlers::process_inline));
 
