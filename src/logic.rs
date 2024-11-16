@@ -1,33 +1,36 @@
 use std::path::{Path, PathBuf};
 use std::process::Output;
 
+use async_writeln::AsyncWriteln;
 use itertools::Itertools;
 use svg::node::element::tag::Type;
 use svg::parser::Event;
 use thiserror::Error;
 use tokio::fs::{self, File, OpenOptions};
-use tokio::io::{self, AsyncWriteExt};
+use tokio::io::{self};
 use tokio::process::Command;
 use uuid::Uuid;
 
+mod async_writeln;
+
 const TMP_DIR: &str = "tmp";
 
-pub enum Quality {
-    Low,
-    High,
-}
-
 #[derive(Error, Debug)]
-#[error("{message}")]
-pub struct TypstError {
-    pub coordinates: (u32, u32),
-    message: Box<str>,
+pub enum RenderError {
+    #[error(transparent)]
+    Io(#[from] io::Error),
+
+    #[error("nothing to render")]
+    EmptyDocument,
+
+    #[error("{message}")]
+    InvalidSyntax {
+        coordinates: (u32, u32),
+        message: Box<str>,
+    },
 }
 
-pub async fn render(
-    contents: &str,
-    quality: Quality,
-) -> io::Result<Result<Option<PathBuf>, TypstError>> {
+pub async fn render(contents: &str) -> Result<PathBuf, RenderError> {
     let (filename_typ, filename_svg, filename_png) = gen_filenames();
     let mut file = create_file(&filename_typ).await?;
 
@@ -47,18 +50,18 @@ pub async fn render(
             .expect("svg files should contain at least 4 tags")
         else {
             fs::remove_file(filename_svg).await?;
-            return Ok(Ok(None));
+            return Err(RenderError::EmptyDocument);
         };
         fs::remove_file(filename_svg).await?;
     }
 
-    let output = compile(&filename_typ, &filename_png, quality).await?;
+    let output = compile(&filename_typ, &filename_png).await?;
     fs::remove_file(filename_typ).await?;
 
-    let result = output
+    output
         .status
         .success()
-        .then_some(Some(filename_png))
+        .then_some(filename_png)
         .ok_or_else(|| {
             let err_msg_full = String::from_utf8(output.stderr)
                 .expect("the typst CLI should output valid utf-8 to stderr");
@@ -72,13 +75,11 @@ pub async fn render(
             let coordinates = parse_location(location_raw)
                 .expect("typst should output coordinates in a predetermined format");
 
-            TypstError {
+            RenderError::InvalidSyntax {
                 coordinates,
                 message,
             }
-        });
-
-    Ok(result)
+        })
 }
 
 fn parse_location(raw: &str) -> Option<(u32, u32)> {
@@ -135,13 +136,9 @@ async fn compile_svg(filename_typ: &Path, filename_svg: &Path) -> io::Result<Out
 
     Ok(output)
 }
-async fn compile(filename_typ: &Path, filename_png: &Path, quality: Quality) -> io::Result<Output> {
+async fn compile(filename_typ: &Path, filename_png: &Path) -> io::Result<Output> {
     let convert_err_msg = "paths created by this program should be convertible strings";
 
-    let ppi = match quality {
-        Quality::Low => "300",
-        Quality::High => "300",
-    };
     let input = filename_typ.to_str().expect(convert_err_msg);
     let output = filename_png.to_str().expect(convert_err_msg);
 
@@ -151,7 +148,7 @@ async fn compile(filename_typ: &Path, filename_png: &Path, quality: Quality) -> 
             "--diagnostic-format",
             "short",
             "--ppi",
-            ppi,
+            "300",
             input,
             output,
         ])
@@ -159,16 +156,4 @@ async fn compile(filename_typ: &Path, filename_png: &Path, quality: Quality) -> 
         .await?;
 
     Ok(output)
-}
-
-trait AsyncWriteln {
-    async fn writeln(&mut self, contents: &[u8]) -> io::Result<()>;
-}
-
-impl AsyncWriteln for File {
-    async fn writeln(&mut self, contents: &[u8]) -> io::Result<()> {
-        self.write_all(contents).await?;
-        self.write_all(b"\n").await?;
-        Ok(())
-    }
 }
