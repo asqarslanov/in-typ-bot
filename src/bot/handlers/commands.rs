@@ -8,7 +8,7 @@ pub async fn start(bot: Bot, msg: Message) {
         indoc! {"
             === Euler's identity:
             #let exponent = $i pi$
-            $e^exponent + 1 - 0$\
+            $e^exponent + 1 = 0$\
         "},
         "typst",
     );
