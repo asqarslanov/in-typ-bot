@@ -48,10 +48,10 @@ pub async fn render(contents: &str) -> Result<PathBuf, RenderError> {
 }
 
 fn parse_location(raw: &str) -> Option<(u32, u32)> {
-    let mut tokens = raw.split(':').skip(1);
+    let mut tokens = raw.rsplitn(4, ':').skip(1);
 
-    let line_raw = tokens.next()?;
     let column_raw = tokens.next()?;
+    let line_raw = tokens.next()?;
 
     let line = line_raw.parse::<u32>().ok()? - 1;
     let column = column_raw.parse::<u32>().ok()?;
