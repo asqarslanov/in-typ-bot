@@ -1,10 +1,10 @@
 use indoc::{formatdoc, indoc};
 use teloxide::prelude::*;
 use teloxide::types::ParseMode;
-use teloxide::utils::markdown;
+use teloxide::utils::html;
 
 pub async fn start(bot: Bot, msg: Message) {
-    let snippet = markdown::code_block_with_lang(
+    let snippet = html::code_block_with_lang(
         indoc! {"
             === Euler's identity:
             #let exponent = $i pi$
@@ -23,15 +23,16 @@ pub async fn start(bot: Bot, msg: Message) {
     "};
 
     let _ = bot
-        .parse_mode(ParseMode::MarkdownV2)
         .send_message(msg.chat.id, text)
-        .await;
+        .parse_mode(ParseMode::Html)
+        .await
+        .unwrap();
 }
 
 pub async fn help(bot: Bot, msg: Message) {
     let _ = bot
-        .parse_mode(ParseMode::MarkdownV2)
         .send_message(msg.chat.id, "A help message should go here…")
-        // .parse_mode(ParseMode::MarkdownV2)
+        .parse_mode(ParseMode::Html)
+        // .parse_mode(ParseMode::Html)
         .await;
 }

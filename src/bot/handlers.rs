@@ -6,7 +6,7 @@ use teloxide::types::{
     InlineQueryResult, InlineQueryResultArticle, InlineQueryResultCachedPhoto, InputFile,
     InputMedia, InputMediaPhoto, InputMessageContent, InputMessageContentText, ParseMode,
 };
-use teloxide::utils::markdown;
+use teloxide::utils::html;
 use teloxide::RequestError;
 use tokio::fs;
 use uuid::Uuid;
@@ -36,7 +36,7 @@ pub async fn message(bot: Bot, msg: Message) -> Result<(), RequestError> {
 
     let reply_msg = bot
         .send_message(msg.chat.id, "Wait a second…")
-        .parse_mode(ParseMode::MarkdownV2)
+        .parse_mode(ParseMode::Html)
         .disable_notification(true)
         .await?;
 
@@ -61,7 +61,7 @@ pub async fn message(bot: Bot, msg: Message) -> Result<(), RequestError> {
                 let text = generate_error_text(contents, errors, true);
                 let _ = bot
                     .send_message(msg.chat.id, text)
-                    .parse_mode(ParseMode::MarkdownV2)
+                    .parse_mode(ParseMode::Html)
                     .await;
             }
         },
@@ -77,13 +77,13 @@ fn generate_error_text(source: &str, errors: &[ErrorDetails], formatting: bool) 
             .map(|err| {
                 let (line, column) = err.coordinates;
                 let coordinates_text =
-                    markdown::bold(&format!("Error on Line {line} : Column {column}"));
-                let error_text = markdown::code_inline(&err.message);
+                    html::bold(&format!("Error on Line {line} : Column {column}"));
+                let error_text = html::code_inline(&err.message);
                 format!("{coordinates_text}\n{error_text}")
             })
             .join("\n\n");
 
-        let source = markdown::code_block_with_lang(source, "typst");
+        let source = html::code_block_with_lang(source, "typst");
         format!("{source}\n{errors_text}")
     } else {
         let error = errors
@@ -146,8 +146,7 @@ pub async fn inline_query(
                             Uuid::new_v4().simple().to_string(),
                             not_formatted,
                             InputMessageContent::Text(
-                                InputMessageContentText::new(formatted)
-                                    .parse_mode(ParseMode::MarkdownV2),
+                                InputMessageContentText::new(formatted).parse_mode(ParseMode::Html),
                             ),
                         ))),
                     )
