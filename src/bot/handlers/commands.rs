@@ -1,6 +1,6 @@
 use indoc::{formatdoc, indoc};
 use teloxide::prelude::*;
-use teloxide::types::ParseMode;
+use teloxide::types::{LinkPreviewOptions, ParseMode};
 use teloxide::utils::html;
 
 pub async fn start(bot: Bot, msg: Message) {
@@ -51,5 +51,12 @@ pub async fn help(bot: Bot, msg: Message) {
     let _ = bot
         .send_message(msg.chat.id, text)
         .parse_mode(ParseMode::Html)
+        .link_preview_options(LinkPreviewOptions {
+            is_disabled: true,
+            prefer_large_media: false,
+            prefer_small_media: false,
+            show_above_text: false,
+            url: None,
+        })
         .await;
 }
