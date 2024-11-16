@@ -14,18 +14,27 @@ use crate::logic::{self, Quality, TypstError};
 pub async fn process_message(bot: Bot, msg: Message, cache_chat: ChatId) -> Result<(), ()> {
     let contents = msg.text().expect("message contains no text");
 
-    match logic::render(contents, Quality::High).await.unwrap() {
-        Ok(path) => {
-            let photo = InputFile::file(&path);
+    match logic::render(contents, Quality::High)
+        .await
+        .expect("io errors shouldn't happen")
+    {
+        Ok(maybe_path) => match maybe_path {
+            Some(path) => {
+                let photo = InputFile::file(&path);
 
-            let cached_msg = bot.send_photo(cache_chat, photo).await.unwrap();
-            let _ = bot
-                .copy_message(msg.chat.id, cache_chat, cached_msg.id)
-                .await;
+                let cached_msg = bot
+                    .send_photo(cache_chat, photo)
+                    .await
+                    .expect("cached message should successfully be sent");
+                let _ = bot
+                    .copy_message(msg.chat.id, cache_chat, cached_msg.id)
+                    .await;
 
-            let _ = fs::remove_file(path).await;
-            let _ = bot.delete_message(cache_chat, cached_msg.id).await;
-        }
+                let _ = fs::remove_file(path).await;
+                let _ = bot.delete_message(cache_chat, cached_msg.id).await;
+            }
+            None => return Ok(()),
+        },
         Err(err) => {
             let text = generate_error_text(contents, &err, true);
             let _ = bot
@@ -54,33 +63,42 @@ fn generate_error_text(source: &str, error: &TypstError, formatting: bool) -> St
 pub async fn process_inline(bot: Bot, query: InlineQuery, cache_chat: ChatId) -> Result<(), ()> {
     let contents = query.query;
 
-    match logic::render(&contents, Quality::Low).await.unwrap() {
-        Ok(path) => {
-            let photo = InputFile::file(&path);
-            let cached_msg = bot.send_photo(cache_chat, photo).await.unwrap();
+    match logic::render(&contents, Quality::Low)
+        .await
+        .expect("io errors shouldn't happen 2")
+    {
+        Ok(maybe_path) => match maybe_path {
+            Some(path) => {
+                let photo = InputFile::file(&path);
+                let cached_msg = bot
+                    .send_photo(cache_chat, photo)
+                    .await
+                    .expect("cached message should be sent successfully 2");
 
-            let _ = bot
-                .answer_inline_query(
-                    query.id,
-                    iter::once(InlineQueryResult::CachedPhoto(
-                        InlineQueryResultCachedPhoto::new(
-                            Uuid::new_v4().simple().to_string(),
-                            &cached_msg
-                                .photo()
-                                .expect("cached message should contain photos")
-                                .first()
-                                .expect("cached message should contain at least one photo")
-                                .file
-                                .id,
-                        ),
-                    )),
-                )
-                .send()
-                .await;
+                let _ = bot
+                    .answer_inline_query(
+                        query.id,
+                        iter::once(InlineQueryResult::CachedPhoto(
+                            InlineQueryResultCachedPhoto::new(
+                                Uuid::new_v4().simple().to_string(),
+                                &cached_msg
+                                    .photo()
+                                    .expect("cached message should contain photos")
+                                    .first()
+                                    .expect("cached message should contain at least one photo")
+                                    .file
+                                    .id,
+                            ),
+                        )),
+                    )
+                    .send()
+                    .await;
 
-            let _ = fs::remove_file(path).await;
-            let _ = bot.delete_message(cache_chat, cached_msg.id).await;
-        }
+                let _ = fs::remove_file(path).await;
+                let _ = bot.delete_message(cache_chat, cached_msg.id).await;
+            }
+            None => return Ok(()),
+        },
         Err(err) => {
             let not_formatted = generate_error_text(&contents, &err, false);
             let formatted = generate_error_text(&contents, &err, true);
