@@ -4,8 +4,7 @@ use std::process::Output;
 use async_writeln::AsyncWriteln;
 use filename::{Filename, TMP_DIR};
 use itertools::Itertools;
-use svg::node::element::tag::Type;
-use svg::parser::Event;
+use svg::{node::element::tag::Type, parser::Event};
 use thiserror::Error;
 use tokio::fs::{self, File, OpenOptions};
 use tokio::io::{self};
@@ -30,56 +29,22 @@ pub enum RenderError {
 }
 
 pub async fn render(contents: &str) -> Result<PathBuf, RenderError> {
-    let path = Filename::new();
+    let path_to_file = Filename::new();
 
-    let mut file = create_file(&path.typ()).await?;
+    let mut file_typ = create_file(&path_to_file.typ()).await?;
+    setup_page(&mut file_typ).await?;
+    file_typ.writeln(contents.as_bytes()).await?;
 
-    setup_page(&mut file).await?;
-    file.writeln(contents.as_bytes()).await?;
-
-    let svg_output = compile_svg(&path.typ(), &path.svg()).await?;
-    if svg_output.status.success() {
-        let (
-            Event::Tag("svg", Type::Start, _),
-            Event::Tag("path", Type::Empty, _),
-            Event::Tag("g", Type::Empty, _),
-            Event::Tag("svg", Type::End, _),
-        ) = svg::open(path.svg(), &mut String::new())?
-            .take(4)
-            .collect_tuple::<(_, _, _, _)>()
-            .expect("svg files should contain at least 4 tags")
-        else {
-            fs::remove_file(path.svg()).await?;
-            return Err(RenderError::EmptyDocument);
-        };
-        fs::remove_file(path.svg()).await?;
+    let compile_svg_output = compile(&path_to_file, OutputFileExtension::Svg).await?;
+    if let Err(err) = process_output_svg(&path_to_file, compile_svg_output).await {
+        let _ = fs::remove_file(path_to_file.typ()).await;
+        return Err(err);
     }
 
-    let output = compile(&path.typ(), &path.png()).await?;
-    fs::remove_file(path.typ()).await?;
+    let compile_png_output = compile(&path_to_file, OutputFileExtension::Png).await?;
+    let _ = fs::remove_file(path_to_file.typ()).await;
 
-    output
-        .status
-        .success()
-        .then_some(path.png())
-        .ok_or_else(|| {
-            let err_msg_full = String::from_utf8(output.stderr)
-                .expect("the typst CLI should output valid utf-8 to stderr");
-
-            let (location_raw, _, message) = err_msg_full
-                .splitn(3, |c: char| c.is_ascii_whitespace())
-                .collect_tuple::<(_, _, _)>()
-                .expect("typst should output at least three tokens separated by whitespace");
-
-            let message = Box::from(message);
-            let coordinates = parse_location(location_raw)
-                .expect("typst should output coordinates in a predetermined format");
-
-            RenderError::InvalidSyntax {
-                coordinates,
-                message,
-            }
-        })
+    process_output_png(&path_to_file, compile_png_output)
 }
 
 fn parse_location(raw: &str) -> Option<(u32, u32)> {
@@ -111,24 +76,25 @@ async fn setup_page(file: &mut File) -> io::Result<()> {
     Ok(())
 }
 
-async fn compile_svg(filename_typ: &Path, filename_svg: &Path) -> io::Result<Output> {
-    let convert_err_msg = "paths created by this program should be convertible strings";
-
-    let input = filename_typ.to_str().expect(convert_err_msg);
-    let output = filename_svg.to_str().expect(convert_err_msg);
-
-    let output = Command::new("typst")
-        .args(["compile", input, output])
-        .output()
-        .await?;
-
-    Ok(output)
+enum OutputFileExtension {
+    Svg,
+    Png,
 }
-async fn compile(filename_typ: &Path, filename_png: &Path) -> io::Result<Output> {
-    let convert_err_msg = "paths created by this program should be convertible strings";
 
-    let input = filename_typ.to_str().expect(convert_err_msg);
-    let output = filename_png.to_str().expect(convert_err_msg);
+async fn compile(
+    path_to_file: &Filename,
+    output_file_extension: OutputFileExtension,
+) -> io::Result<Output> {
+    fn to_str(path: &Path) -> &str {
+        let convert_err_msg = "paths created by this program should be convertible strings";
+        path.to_str().expect(convert_err_msg)
+    }
+
+    let filename_in = path_to_file.typ();
+    let filename_out = match output_file_extension {
+        OutputFileExtension::Svg => path_to_file.svg(),
+        OutputFileExtension::Png => path_to_file.png(),
+    };
 
     let output = Command::new("typst")
         .args([
@@ -137,11 +103,71 @@ async fn compile(filename_typ: &Path, filename_png: &Path) -> io::Result<Output>
             "short",
             "--ppi",
             "300",
-            input,
-            output,
+            to_str(&filename_in),
+            to_str(&filename_out),
         ])
         .output()
         .await?;
 
     Ok(output)
+}
+
+async fn process_output_svg(
+    path_to_file: &Filename,
+    command_output: Output,
+) -> Result<(), RenderError> {
+    if command_output.status.success() {
+        let mut buffer = String::new();
+        let first_tags = svg::open(path_to_file.svg(), &mut buffer)?
+            .take(4)
+            .collect_tuple::<(_, _, _, _)>()
+            .expect("svg files should contain at least 4 tags");
+        let _ = fs::remove_file(path_to_file.svg()).await;
+
+        if matches!(
+            first_tags,
+            (
+                Event::Tag("svg", Type::Start, _),
+                Event::Tag("path", Type::Empty, _),
+                Event::Tag("g", Type::Empty, _),
+                Event::Tag("svg", Type::End, _),
+            )
+        ) {
+            Err(RenderError::EmptyDocument)
+        } else {
+            Ok(())
+        }
+    } else {
+        Err(extract_error(command_output))
+    }
+}
+
+fn process_output_png(
+    path_to_file: &Filename,
+    command_output: Output,
+) -> Result<PathBuf, RenderError> {
+    if command_output.status.success() {
+        Ok(path_to_file.png())
+    } else {
+        Err(extract_error(command_output))
+    }
+}
+
+fn extract_error(command_output: Output) -> RenderError {
+    let err_msg_full = String::from_utf8(command_output.stderr)
+        .expect("the typst CLI should output valid utf-8 to stderr");
+
+    let (location_raw, _, message) = err_msg_full
+        .splitn(3, |c: char| c.is_ascii_whitespace())
+        .collect_tuple::<(_, _, _)>()
+        .expect("typst should output at least three tokens separated by whitespace");
+
+    let message = Box::from(message);
+    let coordinates = parse_location(location_raw)
+        .expect("typst should output coordinates in a predetermined format");
+
+    RenderError::InvalidSyntax {
+        coordinates,
+        message,
+    }
 }

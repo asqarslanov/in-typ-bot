@@ -2,9 +2,9 @@ use std::path::PathBuf;
 
 use uuid::Uuid;
 
-pub struct Filename(PathBuf);
-
 pub const TMP_DIR: &str = "tmp";
+
+pub struct Filename(PathBuf);
 
 impl Filename {
     pub fn new() -> Self {
@@ -23,7 +23,9 @@ impl Filename {
                 .join(uuid.to_string()),
         )
     }
+}
 
+impl Filename {
     pub fn typ(&self) -> PathBuf {
         self.0.with_extension("typ")
     }
