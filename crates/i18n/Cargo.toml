@@ -1,7 +1,10 @@
 [package]
 name = "i18n"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 
 [dependencies]
 indoc = "2.0.5"
+
+[lints]
+workspace = true

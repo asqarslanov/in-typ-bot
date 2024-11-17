@@ -1,0 +1,25 @@
+[package]
+name = "in-typ-bot"
+version.workspace = true
+edition = "2021"
+
+[dependencies]
+dotenvy = "0.15.7"
+dotenvy_macro = "0.15.7"
+i18n = { path = "../i18n" }
+indoc = "2.0.5"
+itertools = "0.13.0"
+svg = "0.18.0"
+teloxide = { version = "0.13.0", features = ["macros"] }
+thiserror = "2.0.3"
+tokio = { version = "1.41.1", features = [
+  "macros",
+  "process",
+  "rt-multi-thread",
+] }
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
+uuid = { version = "1.11.0", features = ["fast-rng"] }
+
+[lints]
+workspace = true
