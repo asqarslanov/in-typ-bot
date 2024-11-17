@@ -1,12 +1,12 @@
 use dotenvy_macro::dotenv;
+use handlers::commands::Command;
 use teloxide::dispatching::UpdateHandler;
-use teloxide::macros::BotCommands;
 use teloxide::{prelude::*, RequestError};
 use tracing::info;
 
 mod handlers;
 
-pub async fn start() {
+pub async fn run() {
     let bot = Bot::from_env();
 
     let cache_chat = ChatId(
@@ -25,22 +25,17 @@ pub async fn start() {
     Box::pin(dispatcher.dispatch()).await;
 }
 
-#[derive(BotCommands, Clone)]
-#[command(rename_rule = "snake_case")]
-enum Command {
-    Start,
-    Help,
-}
-
 fn schema() -> UpdateHandler<RequestError> {
-    let inline_handler =
-        Update::filter_inline_query().branch(dptree::endpoint(handlers::inline_query));
+    let inline_handler = Update::filter_inline_query().branch(dptree::endpoint(
+        handlers::typst_requests::inline_query::handle,
+    ));
 
     let command_handler = Update::filter_message()
         .filter_command::<Command>()
-        .branch(dptree::endpoint(handlers::command));
+        .branch(dptree::endpoint(handlers::commands::handle));
 
-    let message_handler = Update::filter_message().branch(dptree::endpoint(handlers::message));
+    let message_handler = Update::filter_message()
+        .branch(dptree::endpoint(handlers::typst_requests::message::handle));
 
     dptree::entry()
         .branch(inline_handler)
