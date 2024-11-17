@@ -18,8 +18,8 @@ pub async fn handle(bot: Bot, msg: Message) {
 
         Or you can just use me in chat mode by sending me messages directly.
 
-        Source code: github.com/asqarslanov/in-typ-bot
-        Author: @AsqArslanov\
+        Author: @AsqArslanov
+        Source code: github.com/asqarslanov/in-typ-bot\
     "};
 
     let _ = bot
