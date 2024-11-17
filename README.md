@@ -1,1 +1,1 @@
-# Typst Inline Math Bot / [@InTypBot](https://t.me/InTypBot)
+# [@InTypBot](https://t.me/InTypBot) / Typst Inline Math Bot
