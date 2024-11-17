@@ -1,26 +1,14 @@
-use indoc::formatdoc;
+use i18n::Locale;
 use teloxide::prelude::*;
 use teloxide::types::{LinkPreviewOptions, ParseMode};
 use teloxide::utils::html;
 
 pub async fn handle(bot: Bot, msg: Message) {
-    let inline_snippet = html::code_inline("@InTypBot $2 + 2 = 5$");
-    let clarification = html::italic("…of course, you can write any other Typst code.");
+    let t = i18n::locale(Locale::EnUs).commands.help;
 
-    let text = formatdoc! {"
-        I’m a bot that can render Typst markup in Telegram chats.
-
-        If you’re not familiar with Typst syntax, refer to their official documentation: typst.app/docs/.
-
-        To use me in inline mode, type the following inside any chat:
-        {inline_snippet}
-        {clarification}
-
-        Or you can just use me in chat mode by sending me messages directly.
-
-        Author: @AsqArslanov
-        Source code: github.com/asqarslanov/in-typ-bot\
-    "};
+    let text: String = t
+        .message(&html::code_inline("@InTypBot $2 + 2 = 5$"))
+        .edit_clarification(|it| html::italic(it));
 
     let _ = bot
         .send_message(msg.chat.id, text)
