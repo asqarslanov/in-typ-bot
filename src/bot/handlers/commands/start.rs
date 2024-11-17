@@ -1,5 +1,7 @@
 use indoc::{formatdoc, indoc};
-use teloxide::{prelude::*, types::ParseMode, utils::html};
+use teloxide::prelude::*;
+use teloxide::types::ParseMode;
+use teloxide::utils::html;
 
 pub async fn handle(bot: Bot, msg: Message) {
     let snippet = html::code_block_with_lang(

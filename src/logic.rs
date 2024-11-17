@@ -7,7 +7,7 @@ use itertools::Itertools;
 use svg::{node::element::tag::Type, parser::Event};
 use thiserror::Error;
 use tokio::fs::{self, File, OpenOptions};
-use tokio::io::{self};
+use tokio::io;
 use tokio::process::Command;
 
 mod async_writeln;

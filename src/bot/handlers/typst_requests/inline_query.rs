@@ -9,7 +9,7 @@ use teloxide::RequestError;
 use tokio::fs;
 use uuid::Uuid;
 
-use crate::logic::{self};
+use crate::logic;
 
 pub async fn handle(bot: Bot, qry: InlineQuery, cache_chat: ChatId) -> Result<(), RequestError> {
     let contents = qry.query;
