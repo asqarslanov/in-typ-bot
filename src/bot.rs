@@ -2,6 +2,7 @@ use dotenvy_macro::dotenv;
 use teloxide::dispatching::UpdateHandler;
 use teloxide::macros::BotCommands;
 use teloxide::{prelude::*, RequestError};
+use tracing::info;
 
 mod handlers;
 
@@ -15,14 +16,13 @@ pub async fn start() {
             .expect("chat id should be an i64"),
     );
 
-    Box::pin(
-        Dispatcher::builder(bot, schema())
-            .dependencies(dptree::deps![cache_chat])
-            .enable_ctrlc_handler()
-            .build()
-            .dispatch(),
-    )
-    .await;
+    let mut dispatcher = Dispatcher::builder(bot, schema())
+        .dependencies(dptree::deps![cache_chat])
+        .enable_ctrlc_handler()
+        .build();
+
+    info!("Starting the bot.");
+    Box::pin(dispatcher.dispatch()).await;
 }
 
 #[derive(BotCommands, Clone)]

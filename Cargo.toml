@@ -16,6 +16,8 @@ tokio = { version = "1.41.1", features = [
   "process",
   "rt-multi-thread",
 ] }
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
 uuid = { version = "1.11.0", features = ["fast-rng"] }
 
 [lints.clippy]
