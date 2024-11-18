@@ -6,7 +6,7 @@ use indoc::formatdoc;
 use crate::Locale;
 
 pub struct FormatInlineSnippet {
-    pub(crate) _locale: Locale,
+    pub(crate) __locale: Locale,
 }
 
 impl FormatInlineSnippet {
@@ -15,8 +15,8 @@ impl FormatInlineSnippet {
         f: impl FnOnce(&str) -> S,
     ) -> FormatClarification<S> {
         FormatClarification {
-            _locale: self._locale,
-            inline_snippet: f(match self._locale {
+            __locale: self.__locale,
+            inline_snippet: f(match self.__locale {
                 Locale::EnUs => formatcp!("{} $2 + 2 = 5$", crate::shared::bot::USERNAME),
                 Locale::RuRu => formatcp!("{} $2 + 2 = 5$", crate::shared::bot::USERNAME),
             }),
@@ -28,7 +28,7 @@ pub struct FormatClarification<S1>
 where
     S1: Display,
 {
-    pub(crate) _locale: Locale,
+    pub(crate) __locale: Locale,
     pub(crate) inline_snippet: S1,
 }
 
@@ -37,7 +37,7 @@ where
     S1: Display,
 {
     pub fn format_clarification<S: Display>(&self, f: impl FnOnce(&str) -> S) -> String {
-        match self._locale {
+        match self.__locale {
             Locale::EnUs => formatdoc!(
                 "
                     I’m a bot that can render Typst markup in Telegram chats.

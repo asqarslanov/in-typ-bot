@@ -5,12 +5,12 @@ use indoc::{formatdoc, indoc};
 use crate::Locale;
 
 pub struct FormatSnippet {
-    pub(crate) _locale: Locale,
+    pub(crate) __locale: Locale,
 }
 
 impl FormatSnippet {
     pub fn format_snippet<S: Display>(self, f: impl FnOnce(&str) -> S) -> String {
-        match self._locale {
+        match self.__locale {
             Locale::EnUs => formatdoc! {
                 "
                     Hello! I am {}!
