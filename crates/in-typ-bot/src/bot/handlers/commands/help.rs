@@ -4,15 +4,14 @@ use teloxide::types::{LinkPreviewOptions, ParseMode};
 use teloxide::utils::html;
 
 pub async fn handle(bot: Bot, msg: Message) {
-    let t = i18n::locale(Locale::EnUs).commands.help;
+    let t = i18n::locale(Locale::EnUs).commands;
 
     let text = t
-        .message(
-            "typst.app/docs/",
-            html::code_inline("@InTypBot $2 + 2 = 5$"),
-            "@AsqArslanov",
-            "github.com/asqarslanov/in-typ-bot",
-        )
+        .help()
+        .with_typst_documentation("typst.app/docs/")
+        .with_inline_snippet(html::code_inline("@InTypBot $2 + 2 = 5$"))
+        .with_author("@AsqArslanov")
+        .with_source_code("github.com/asqarslanov/in-typ-bot")
         .format_clarification(html::italic);
 
     let _ = bot
