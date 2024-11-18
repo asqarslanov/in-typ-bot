@@ -5,13 +5,13 @@ use tokio::fs;
 
 use crate::logic;
 
-pub async fn handle(bot: Bot, msg: Message) -> Result<(), RequestError> {
-    let Some(contents) = msg.text() else {
+pub async fn handle(bot: Bot, message: Message) -> Result<(), RequestError> {
+    let Some(contents) = message.text() else {
         return Ok(());
     };
 
     let reply_msg = bot
-        .send_message(msg.chat.id, "Wait a second…")
+        .send_message(message.chat.id, "Wait a second…")
         .parse_mode(ParseMode::Html)
         .disable_notification(true)
         .await?;
@@ -36,7 +36,7 @@ pub async fn handle(bot: Bot, msg: Message) -> Result<(), RequestError> {
             logic::RenderError::InvalidSyntax(ref errors) => {
                 let text = super::generate_error_text(contents, errors, true);
                 let _ = bot
-                    .send_message(msg.chat.id, text)
+                    .send_message(message.chat.id, text)
                     .parse_mode(ParseMode::Html)
                     .await;
             }

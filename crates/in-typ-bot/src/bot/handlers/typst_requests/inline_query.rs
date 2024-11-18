@@ -11,8 +11,12 @@ use uuid::Uuid;
 
 use crate::logic;
 
-pub async fn handle(bot: Bot, qry: InlineQuery, cache_chat: ChatId) -> Result<(), RequestError> {
-    let contents = qry.query;
+pub async fn handle(
+    bot: Bot,
+    inline_query: InlineQuery,
+    cache_chat: ChatId,
+) -> Result<(), RequestError> {
+    let contents = inline_query.query;
 
     match logic::render(&contents).await {
         Ok(path) => {
@@ -23,7 +27,7 @@ pub async fn handle(bot: Bot, qry: InlineQuery, cache_chat: ChatId) -> Result<()
 
             let _ = bot
                 .answer_inline_query(
-                    qry.id,
+                    inline_query.id,
                     iter::once(InlineQueryResult::CachedPhoto(
                         InlineQueryResultCachedPhoto::new(
                             Uuid::new_v4().simple().to_string(),
@@ -51,7 +55,7 @@ pub async fn handle(bot: Bot, qry: InlineQuery, cache_chat: ChatId) -> Result<()
 
                 let _ = bot
                     .answer_inline_query(
-                        qry.id,
+                        inline_query.id,
                         iter::once(InlineQueryResult::Article(InlineQueryResultArticle::new(
                             Uuid::new_v4().simple().to_string(),
                             not_formatted,

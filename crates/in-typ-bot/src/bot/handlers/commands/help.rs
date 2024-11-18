@@ -4,8 +4,8 @@ use teloxide::utils::html;
 
 use crate::bot::common::BotLocale;
 
-pub async fn handle(bot: Bot, msg: Message) {
-    let locale = BotLocale::from(&msg);
+pub async fn handle(bot: Bot, message: Message) {
+    let locale = BotLocale::from(&message);
     let t = i18n::t(locale.into()).commands;
 
     let text = t
@@ -14,7 +14,7 @@ pub async fn handle(bot: Bot, msg: Message) {
         .format_clarification(html::italic);
 
     let _ = bot
-        .send_message(msg.chat.id, text)
+        .send_message(message.chat.id, text)
         .parse_mode(ParseMode::Html)
         .link_preview_options(LinkPreviewOptions {
             is_disabled: true,

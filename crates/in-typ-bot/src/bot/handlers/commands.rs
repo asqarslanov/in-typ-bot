@@ -12,14 +12,14 @@ pub enum Command {
     Help,
 }
 
-pub async fn handle(bot: Bot, msg: Message, cmd: Command) -> Result<(), RequestError> {
-    match cmd {
+pub async fn handle(bot: Bot, message: Message, command: Command) -> Result<(), RequestError> {
+    match command {
         Command::Start => {
-            start::handle(bot, msg).await;
+            start::handle(bot, message).await;
             Ok(())
         }
         Command::Help => {
-            help::handle(bot, msg).await;
+            help::handle(bot, message).await;
             Ok(())
         }
     }
