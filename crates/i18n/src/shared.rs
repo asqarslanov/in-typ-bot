@@ -1,3 +1,4 @@
+pub mod bot;
 pub mod commands;
 
-pub const BOT_USERNAME: &str = "@InTypBot";
+pub const TYPST_DOCS: &str = "typst.app/docs/";

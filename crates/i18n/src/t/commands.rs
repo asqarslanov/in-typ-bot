@@ -23,7 +23,7 @@ impl Section {
 
                     See {} for more details.\
                 ",
-                crate::shared::BOT_USERNAME,
+                crate::shared::bot::USERNAME,
                 crate::shared::commands::HELP
             },
             Locale::RuRu => formatdoc! {
@@ -36,14 +36,14 @@ impl Section {
 
                     Смотрите {} для подробностей.\
                 ",
-                crate::shared::BOT_USERNAME,
+                crate::shared::bot::USERNAME,
                 crate::shared::commands::HELP
             },
         }
     }
 
-    pub const fn help(&self) -> _help::AddTypstDocs {
-        _help::AddTypstDocs {
+    pub const fn help(&self) -> _help::AddInlineSnippet {
+        _help::AddInlineSnippet {
             _locale: self._locale,
         }
     }
