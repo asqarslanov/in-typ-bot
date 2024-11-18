@@ -1,4 +1,4 @@
-use indoc::{formatdoc, indoc};
+use indoc::indoc;
 use teloxide::prelude::*;
 use teloxide::types::ParseMode;
 use teloxide::utils::html;
@@ -12,15 +12,10 @@ pub async fn handle(bot: Bot, msg: Message) {
         "},
         "typst",
     );
-    let text = formatdoc! {"
-        Hello! I am @InTypBot!
-        Send me some Typst code, and I will render it here.
 
-        For example:
-        {snippet}
-
-        See /help for more details.\
-    "};
+    let text = i18n::locale(i18n::Locale::default())
+        .commands
+        .start(snippet);
 
     let _ = bot
         .send_message(msg.chat.id, text)
