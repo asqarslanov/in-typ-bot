@@ -10,6 +10,9 @@ pub struct FormatInlineSnippet {
 }
 
 impl FormatInlineSnippet {
+    /// ```text
+    /// @InTypeBot $2 + 2 = 5$
+    /// ```
     pub fn format_inline_snippet<S: Display>(
         &self,
         f: impl FnOnce(&str) -> S,
@@ -36,6 +39,9 @@ impl<S1> FormatClarification<S1>
 where
     S1: Display,
 {
+    /// ```text
+    /// …of course, you can write any other Typst code.
+    /// ```
     pub fn format_clarification<S: Display>(&self, f: impl FnOnce(&str) -> S) -> String {
         match self.__locale {
             Locale::EnUs => formatdoc!(

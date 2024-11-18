@@ -9,6 +9,11 @@ pub struct FormatSnippet {
 }
 
 impl FormatSnippet {
+    /// ```text
+    /// === Euler's identity:
+    /// #let exponent = $i pi$
+    /// $e^exponent + 1 = 0$
+    /// ```
     pub fn format_snippet<S: Display>(self, f: impl FnOnce(&str) -> S) -> String {
         match self.__locale {
             Locale::EnUs => formatdoc! {

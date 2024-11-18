@@ -3,8 +3,10 @@ mod t;
 
 #[derive(Default, Clone, Copy)]
 pub enum Locale {
+    /// English (United States)
     #[default]
     EnUs,
+    /// Russian (Russia)
     RuRu,
 }
 
