@@ -1,4 +1,4 @@
-mod root;
+mod t;
 
 #[derive(Default, Clone, Copy)]
 pub enum Locale {
@@ -7,12 +7,12 @@ pub enum Locale {
     RuRu,
 }
 
-pub fn locale(name: Locale) -> root::Translation {
-    root::Translation {
+pub fn locale(name: Locale) -> t::Translation {
+    t::Translation {
         _locale: name,
-        commands: root::s_commands::Section {
+        commands: t::commands::Section {
             _locale: name,
-            help: root::s_commands::s_help::Section { _locale: name },
+            help: t::commands::help::Section { _locale: name },
         },
     }
 }

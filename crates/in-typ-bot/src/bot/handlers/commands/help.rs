@@ -6,9 +6,14 @@ use teloxide::utils::html;
 pub async fn handle(bot: Bot, msg: Message) {
     let t = i18n::locale(Locale::EnUs).commands.help;
 
-    let text: String = t
-        .message(&html::code_inline("@InTypBot $2 + 2 = 5$"))
-        .edit_clarification(|it| html::italic(it));
+    let text = t
+        .message(
+            "typst.app/docs/",
+            html::code_inline("@InTypBot $2 + 2 = 5$"),
+            "@AsqArslanov",
+            "github.com/asqarslanov/in-typ-bot",
+        )
+        .format_clarification(html::italic);
 
     let _ = bot
         .send_message(msg.chat.id, text)
