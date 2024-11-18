@@ -42,8 +42,8 @@ impl Section {
         }
     }
 
-    pub const fn help(&self) -> _help::AddInlineSnippet {
-        _help::AddInlineSnippet {
+    pub const fn help(&self) -> _help::FormatInlineSnippet {
+        _help::FormatInlineSnippet {
             _locale: self._locale,
         }
     }

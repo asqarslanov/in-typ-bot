@@ -1,18 +1,25 @@
 use std::fmt::Display;
 
+use const_format::formatcp;
 use indoc::formatdoc;
 
 use crate::Locale;
 
-pub struct AddInlineSnippet {
+pub struct FormatInlineSnippet {
     pub(crate) _locale: Locale,
 }
 
-impl AddInlineSnippet {
-    pub fn with_inline_snippet<S: Display>(self, inline_snippet: S) -> FormatClarification<S> {
+impl FormatInlineSnippet {
+    pub fn format_inline_snippet<S: Display>(
+        &self,
+        f: impl FnOnce(&str) -> S,
+    ) -> FormatClarification<S> {
         FormatClarification {
             _locale: self._locale,
-            inline_snippet,
+            inline_snippet: f(match self._locale {
+                Locale::EnUs => formatcp!("{} $2 + 2 = 5$", crate::shared::bot::USERNAME),
+                Locale::RuRu => formatcp!("{} $2 + 2 = 5$", crate::shared::bot::USERNAME),
+            }),
         }
     }
 }
@@ -29,7 +36,7 @@ impl<S1> FormatClarification<S1>
 where
     S1: Display,
 {
-    pub fn format_clarification<S: Display>(&self, f: impl FnOnce(&'static str) -> S) -> String {
+    pub fn format_clarification<S: Display>(&self, f: impl FnOnce(&str) -> S) -> String {
         match self._locale {
             Locale::EnUs => formatdoc!(
                 "

@@ -10,7 +10,7 @@ pub async fn handle(bot: Bot, msg: Message) {
 
     let text = t
         .help()
-        .with_inline_snippet(html::code_inline("@InTypBot $2 + 2 = 5$"))
+        .format_inline_snippet(html::code_inline)
         .format_clarification(html::italic);
 
     let _ = bot
