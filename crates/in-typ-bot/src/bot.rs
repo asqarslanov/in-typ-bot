@@ -5,6 +5,7 @@ use teloxide::prelude::*;
 use teloxide::RequestError;
 use tracing::info;
 
+mod common;
 mod handlers;
 
 pub async fn run() {

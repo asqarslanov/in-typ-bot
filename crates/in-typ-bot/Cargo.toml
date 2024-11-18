@@ -9,6 +9,7 @@ dotenvy_macro = "0.15.7"
 i18n = { path = "../i18n" }
 indoc = "2.0.5"
 itertools = "0.13.0"
+strum = { version = "0.26.3", features = ["derive"] }
 svg = "0.18.0"
 teloxide = { version = "0.13.0", features = ["macros"] }
 thiserror = "2.0.3"

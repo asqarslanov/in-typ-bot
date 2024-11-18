@@ -1,10 +1,12 @@
-use i18n::Locale;
 use teloxide::prelude::*;
 use teloxide::types::{LinkPreviewOptions, ParseMode};
 use teloxide::utils::html;
 
+use crate::bot::common::BotLocale;
+
 pub async fn handle(bot: Bot, msg: Message) {
-    let t = i18n::locale(Locale::EnUs).commands;
+    let locale = BotLocale::from(&msg);
+    let t = i18n::locale(locale.into()).commands;
 
     let text = t
         .help()
