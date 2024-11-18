@@ -115,30 +115,48 @@ where
 {
     pub fn format_clarification<S: Display>(&self, f: impl FnOnce(&'static str) -> S) -> String {
         match self._locale {
-            Locale::EnUs => {
-                formatdoc!(
-                    "
-                        I’m a bot that can render Typst markup in Telegram chats.
+            Locale::EnUs => formatdoc!(
+                "
+                    I’m a bot that can render Typst markup in Telegram chats.
 
-                        If you’re not familiar with Typst syntax, refer to their official documentation: {}.
+                    If you’re not familiar with Typst syntax, refer to their official documentation: {}.
 
-                        To use me in inline mode, type the following inside any chat:
-                        {}
-                        {}
+                    To use me in inline mode, type the following inside any chat:
+                    {}
+                    {}
 
-                        Or you can just use me in chat mode by sending me messages directly.
+                    Or you can just use me in chat mode by sending me messages directly.
 
-                        Author: {}
-                        Source code: {}\
-                    ",
-                    self.typst_docs,
-                    self.inline_snippet,
-                    f("…of course, you can write any other Typst code."),
-                    self.author,
-                    self.source_code,
-                )
-            }
-            Locale::RuRu => todo!(),
+                    Author: {}
+                    Source code: {}\
+                ",
+                self.typst_docs,
+                self.inline_snippet,
+                f("…of course, you can write any other Typst code."),
+                self.author,
+                self.source_code,
+            ),
+            Locale::RuRu => formatdoc!(
+                "
+                    Я бот, который умеет отрисовывать разметку Typst в Telegram-чатах.
+
+                    Если вы не знакомы с синтаксисом Typst, ознакомьтесь с их официальной документацией: {}.
+
+                    Чтобы использовать меня в inline-режиме, введите подобный текст внутри любого чата:
+                    {}
+                    {}
+
+                    Или же вы можете просто использовать меня в режиме чата, отправляя сообщения напрямую.
+
+                    Автор: {}
+                    Исходный код: {}\
+                ",
+                self.typst_docs,
+                self.inline_snippet,
+                f("…разумеется, вы можете использовать любой другой Typst-код."),
+                self.author,
+                self.source_code,
+            ),
         }
     }
 }
