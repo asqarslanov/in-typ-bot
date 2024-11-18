@@ -1,3 +1,5 @@
+//! The best internationalization library ever.
+
 mod shared;
 mod t;
 
@@ -10,6 +12,7 @@ pub enum Locale {
     RuRu,
 }
 
+/// - `.commands`
 #[must_use]
 pub const fn t(locale: Locale) -> t::Translation {
     t::Translation {
