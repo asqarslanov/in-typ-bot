@@ -4,18 +4,15 @@ use indoc::formatdoc;
 
 use crate::Locale;
 
-pub struct AddTypstDocumentation {
+pub struct AddTypstDocs {
     pub(crate) _locale: Locale,
 }
 
-impl AddTypstDocumentation {
-    pub const fn with_typst_documentation<S: Display>(
-        self,
-        typst_documentation: S,
-    ) -> AddInlineSnippet<S> {
+impl AddTypstDocs {
+    pub const fn with_typst_docs<S: Display>(self, typst_docs: S) -> AddInlineSnippet<S> {
         AddInlineSnippet {
             _locale: self._locale,
-            typst_documentation,
+            typst_docs,
         }
     }
 }
@@ -25,14 +22,14 @@ where
     S1: Display,
 {
     pub(crate) _locale: Locale,
-    pub(crate) typst_documentation: S1,
+    pub(crate) typst_docs: S1,
 }
 
 impl<S1: Display> AddInlineSnippet<S1> {
     pub fn with_inline_snippet<S: Display>(self, inline_snippet: S) -> AddAuthor<S1, S> {
         AddAuthor {
             _locale: self._locale,
-            typst_documentation: self.typst_documentation,
+            typst_docs: self.typst_docs,
             inline_snippet,
         }
     }
@@ -44,7 +41,7 @@ where
     S2: Display,
 {
     pub(crate) _locale: Locale,
-    pub(crate) typst_documentation: S1,
+    pub(crate) typst_docs: S1,
     pub(crate) inline_snippet: S2,
 }
 
@@ -56,7 +53,7 @@ where
     pub fn with_author<S: Display>(self, author: S) -> AddSourceCode<S1, S2, S> {
         AddSourceCode {
             _locale: self._locale,
-            typst_documentation: self.typst_documentation,
+            typst_docs: self.typst_docs,
             inline_snippet: self.inline_snippet,
             author,
         }
@@ -70,7 +67,7 @@ where
     S3: Display,
 {
     pub(crate) _locale: Locale,
-    pub(crate) typst_documentation: S1,
+    pub(crate) typst_docs: S1,
     pub(crate) inline_snippet: S2,
     pub(crate) author: S3,
 }
@@ -87,7 +84,7 @@ where
     ) -> FormatClarification<S1, S2, S3, S> {
         FormatClarification {
             _locale: self._locale,
-            typst_documentation: self.typst_documentation,
+            typst_docs: self.typst_docs,
             inline_snippet: self.inline_snippet,
             author: self.author,
             source_code,
@@ -103,7 +100,7 @@ where
     S4: Display,
 {
     pub(crate) _locale: Locale,
-    pub(crate) typst_documentation: S1,
+    pub(crate) typst_docs: S1,
     pub(crate) inline_snippet: S2,
     pub(crate) author: S3,
     pub(crate) source_code: S4,
@@ -134,7 +131,7 @@ where
                         Author: {}
                         Source code: {}\
                     ",
-                    self.typst_documentation,
+                    self.typst_docs,
                     self.inline_snippet,
                     f("…of course, you can write any other Typst code."),
                     self.author,

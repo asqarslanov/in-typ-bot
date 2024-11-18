@@ -8,7 +8,7 @@ pub async fn handle(bot: Bot, msg: Message) {
 
     let text = t
         .help()
-        .with_typst_documentation("typst.app/docs/")
+        .with_typst_docs("typst.app/docs/")
         .with_inline_snippet(html::code_inline("@InTypBot $2 + 2 = 5$"))
         .with_author("@AsqArslanov")
         .with_source_code("github.com/asqarslanov/in-typ-bot")

@@ -7,8 +7,8 @@ pub struct Section {
 }
 
 impl Section {
-    pub const fn help(&self) -> _help::AddTypstDocumentation {
-        _help::AddTypstDocumentation {
+    pub const fn help(&self) -> _help::AddTypstDocs {
+        _help::AddTypstDocs {
             _locale: self._locale,
         }
     }
