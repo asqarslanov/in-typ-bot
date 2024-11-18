@@ -11,7 +11,7 @@ pub enum Locale {
 }
 
 #[must_use]
-pub const fn locale(locale: Locale) -> t::Translation {
+pub const fn t(locale: Locale) -> t::Translation {
     t::Translation {
         __locale: locale,
         commands: t::commands::Section { __locale: locale },

@@ -6,7 +6,7 @@ use crate::bot::common::BotLocale;
 
 pub async fn handle(bot: Bot, msg: Message) {
     let locale = BotLocale::from(&msg);
-    let t = i18n::locale(locale.into()).commands;
+    let t = i18n::t(locale.into()).commands;
 
     let text = t
         .start()
