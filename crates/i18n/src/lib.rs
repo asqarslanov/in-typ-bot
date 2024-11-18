@@ -13,10 +13,12 @@ pub enum Locale {
 }
 
 /// - `.commands`
+/// - `.service`
 #[must_use]
 pub const fn t(locale: Locale) -> t::Translation {
     t::Translation {
         __locale: locale,
         commands: t::commands::Section { __locale: locale },
+        service: t::service::Section { __locale: locale },
     }
 }

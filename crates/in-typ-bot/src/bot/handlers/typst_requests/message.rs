@@ -3,6 +3,7 @@ use teloxide::types::{InputFile, InputMedia, InputMediaPhoto, ParseMode};
 use teloxide::RequestError;
 use tokio::fs;
 
+use crate::bot::common::BotLocale;
 use crate::logic;
 
 pub async fn handle(bot: Bot, message: Message) -> Result<(), RequestError> {
@@ -10,8 +11,10 @@ pub async fn handle(bot: Bot, message: Message) -> Result<(), RequestError> {
         return Ok(());
     };
 
+    let t = i18n::t(BotLocale::from(&message).into()).service;
+
     let reply_msg = bot
-        .send_message(message.chat.id, "Wait a second…")
+        .send_message(message.chat.id, t.wait())
         .parse_mode(ParseMode::Html)
         .disable_notification(true)
         .await?;
