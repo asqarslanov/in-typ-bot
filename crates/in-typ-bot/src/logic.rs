@@ -61,7 +61,12 @@ fn extract_error(command_output: Output) -> RenderError {
     RenderError::InvalidSyntax(processed)
 }
 
-pub async fn render(contents: &str) -> Result<PathBuf, RenderError> {
+pub async fn render<F, T>(
+    contents: &str,
+) -> Result<impl async FnOnce(F) -> io::Result<T>, RenderError>
+where
+    F: async FnOnce(&Path) -> T,
+{
     let path_to_file = Filename::new();
 
     let mut file_typ = create_file(&path_to_file.typ()).await?;
@@ -77,7 +82,13 @@ pub async fn render(contents: &str) -> Result<PathBuf, RenderError> {
     let compile_png_output = compile(&path_to_file, OutputFileExtension::Png).await?;
     let _ = fs::remove_file(path_to_file.typ()).await;
 
-    process_output_png(&path_to_file, compile_png_output)
+    let path = process_output_png(&path_to_file, compile_png_output)?;
+
+    Ok(async |process: F| {
+        let output = process(path.as_ref()).await;
+        fs::remove_file(path).await?;
+        Ok(output)
+    })
 }
 
 fn parse_location(raw: &str) -> Option<(u32, u32)> {

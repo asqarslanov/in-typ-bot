@@ -1,7 +1,9 @@
+use std::path::Path;
+
 use teloxide::prelude::*;
 use teloxide::types::{InputFile, InputMedia, InputMediaPhoto, ParseMode};
 use teloxide::RequestError;
-use tokio::fs;
+use tokio::io;
 
 use crate::bot::common::BotLocale;
 use crate::logic;
@@ -20,18 +22,19 @@ pub async fn handle(bot: Bot, message: Message) -> Result<(), RequestError> {
         .await?;
 
     match logic::render(contents).await {
-        Ok(path) => {
-            let photo = InputFile::file(&path);
+        Ok(handle) => {
+            let _: io::Result<()> = handle(async |path: &Path| -> () {
+                let photo = InputFile::file(path);
 
-            let _ = bot
-                .edit_message_media(
-                    reply_msg.chat.id,
-                    reply_msg.id,
-                    InputMedia::Photo(InputMediaPhoto::new(photo)),
-                )
-                .await;
-
-            let _ = fs::remove_file(path).await;
+                let _ = bot
+                    .edit_message_media(
+                        reply_msg.chat.id,
+                        reply_msg.id,
+                        InputMedia::Photo(InputMediaPhoto::new(photo)),
+                    )
+                    .await;
+            })
+            .await;
         }
         Err(err) => match err {
             logic::RenderError::Io(_) => todo!(),

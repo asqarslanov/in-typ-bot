@@ -1,4 +1,5 @@
 use std::iter;
+use std::path::Path;
 
 use teloxide::prelude::*;
 use teloxide::types::{
@@ -6,7 +7,7 @@ use teloxide::types::{
     InputMessageContent, InputMessageContentText, ParseMode,
 };
 use teloxide::RequestError;
-use tokio::fs;
+use tokio::io;
 use uuid::Uuid;
 
 use crate::logic;
@@ -19,32 +20,41 @@ pub async fn handle(
     let contents = inline_query.query;
 
     match logic::render(&contents).await {
-        Ok(path) => {
-            let photo = InputFile::file(&path);
+        Ok(handle) => {
+            type RequestResult<T = ()> = Result<T, RequestError>;
 
-            let cached_msg = bot.send_photo(cache_chat, photo).await?;
-            let _ = fs::remove_file(path).await;
+            let io_result: io::Result<RequestResult> =
+                handle(async |path: &Path| -> RequestResult {
+                    let photo = InputFile::file(path);
+                    let cached_msg = bot.send_photo(cache_chat, photo).await?;
 
-            let _ = bot
-                .answer_inline_query(
-                    inline_query.id,
-                    iter::once(InlineQueryResult::CachedPhoto(
-                        InlineQueryResultCachedPhoto::new(
-                            Uuid::new_v4().simple().to_string(),
-                            &cached_msg
-                                .photo()
-                                .expect("cached message should contain photos")
-                                .first()
-                                .expect("cached message should contain at least one photo")
-                                .file
-                                .id,
-                        ),
-                    )),
-                )
-                .send()
+                    let _ = bot
+                        .answer_inline_query(
+                            inline_query.id,
+                            iter::once(InlineQueryResult::CachedPhoto(
+                                InlineQueryResultCachedPhoto::new(
+                                    Uuid::new_v4().simple().to_string(),
+                                    &cached_msg
+                                        .photo()
+                                        .expect("cached message should contain photos")
+                                        .first()
+                                        .expect("cached message should contain at least one photo")
+                                        .file
+                                        .id,
+                                ),
+                            )),
+                        )
+                        .send()
+                        .await;
+
+                    let _ = bot.delete_message(cache_chat, cached_msg.id).await;
+                    Ok(())
+                })
                 .await;
 
-            let _ = bot.delete_message(cache_chat, cached_msg.id).await;
+            if let Ok(handle_result) = io_result {
+                handle_result?;
+            }
         }
         Err(err) => match err {
             logic::RenderError::Io(_) => todo!(),
