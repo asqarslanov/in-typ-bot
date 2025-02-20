@@ -1,6 +1,6 @@
+use teloxide::RequestError;
 use teloxide::prelude::*;
 use teloxide::types::{InputFile, InputMedia, InputMediaPhoto, ParseMode};
-use teloxide::RequestError;
 use tokio::fs;
 
 use crate::bot::common::BotLocale;

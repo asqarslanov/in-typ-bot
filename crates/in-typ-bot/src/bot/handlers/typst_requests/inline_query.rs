@@ -1,11 +1,11 @@
 use std::iter;
 
+use teloxide::RequestError;
 use teloxide::prelude::*;
 use teloxide::types::{
     InlineQueryResult, InlineQueryResultArticle, InlineQueryResultCachedPhoto, InputFile,
     InputMessageContent, InputMessageContentText, ParseMode,
 };
-use teloxide::RequestError;
 use tokio::fs;
 use uuid::Uuid;
 
