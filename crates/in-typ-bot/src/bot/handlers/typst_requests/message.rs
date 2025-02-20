@@ -1,8 +1,8 @@
 use std::path::Path;
 
+use teloxide::RequestError;
 use teloxide::prelude::*;
 use teloxide::types::{InputFile, InputMedia, InputMediaPhoto, ParseMode};
-use teloxide::RequestError;
 use tokio::io;
 
 use crate::bot::common::BotLocale;

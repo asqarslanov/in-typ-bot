@@ -63,9 +63,9 @@ fn extract_error(command_output: Output) -> RenderError {
 
 pub async fn render<F, T>(
     contents: &str,
-) -> Result<impl async FnOnce(F) -> io::Result<T>, RenderError>
+) -> Result<impl AsyncFnOnce(F) -> io::Result<T>, RenderError>
 where
-    F: async FnOnce(&Path) -> T,
+    F: AsyncFnOnce(&Path) -> T,
 {
     let path_to_file = Filename::new();
 

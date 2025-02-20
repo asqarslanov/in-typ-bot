@@ -1,6 +1,6 @@
+use teloxide::RequestError;
 use teloxide::macros::BotCommands;
 use teloxide::prelude::*;
-use teloxide::RequestError;
 
 mod help;
 mod start;
