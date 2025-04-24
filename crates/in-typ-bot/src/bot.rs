@@ -9,7 +9,7 @@ mod common;
 mod handlers;
 
 pub async fn run() {
-    let bot = Bot::from_env();
+    let bot = Bot::new(dotenv!("TELOXIDE_TOKEN"));
 
     let cache_chat = ChatId(
         dotenv!("CACHE_CHAT_ID")

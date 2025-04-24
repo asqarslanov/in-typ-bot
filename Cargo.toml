@@ -8,8 +8,6 @@ version = "0.0.0"
 
 [workspace.dependencies]
 i18n = { path = "crates/i18n/" }
-
-dotenvy = "0.15.7"
 dotenvy_macro = "0.15.7"
 indoc = "2.0.6"
 itertools = "0.14.0"

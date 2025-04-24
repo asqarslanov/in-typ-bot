@@ -695,7 +695,6 @@ dependencies = [
 name = "in-typ-bot"
 version = "0.0.0"
 dependencies = [
- "dotenvy",
  "dotenvy_macro",
  "i18n",
  "indoc",

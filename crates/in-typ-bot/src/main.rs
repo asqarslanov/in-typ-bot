@@ -2,11 +2,8 @@ mod bot;
 mod logic;
 
 #[tokio::main]
-async fn main() -> Result<(), dotenvy::Error> {
+async fn main() {
     tracing_subscriber::fmt::init();
-    dotenvy::dotenv()?;
 
     Box::pin(bot::run()).await;
-
-    Ok(())
 }
