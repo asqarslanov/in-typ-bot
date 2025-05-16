@@ -21,8 +21,16 @@ pub enum RenderError {
     #[error("nothing to render")]
     EmptyDocument,
 
-    #[error("invalid syntax")]
-    InvalidSyntax(Box<[ErrorDetails]>),
+    #[error(transparent)]
+    Logic(#[from] LogicError),
+}
+
+#[derive(Error, Debug)]
+pub enum LogicError {
+    #[error("logic error")]
+    One { message: Box<str> },
+    #[error("logic errors")]
+    Many(Box<[ErrorDetails]>),
 }
 
 #[derive(Debug)]
@@ -49,16 +57,22 @@ impl From<&str> for ErrorDetails {
     }
 }
 
-fn extract_error(command_output: Output) -> RenderError {
+fn extract_error(command_output: Output) -> LogicError {
     let err_text = String::from_utf8(command_output.stderr)
         .expect("the typst CLI should output valid utf-8 to stderr");
 
-    let processed = err_text
-        .lines()
-        .map(ErrorDetails::from)
-        .collect::<Box<[_]>>();
+    if let Some(err_msg) = err_text.strip_prefix("error: ") {
+        LogicError::One {
+            message: Box::from(err_msg),
+        }
+    } else {
+        let processed = err_text
+            .lines()
+            .map(ErrorDetails::from)
+            .collect::<Box<[_]>>();
 
-    RenderError::InvalidSyntax(processed)
+        LogicError::Many(processed)
+    }
 }
 
 pub async fn render(contents: &str) -> Result<PathBuf, RenderError> {
@@ -171,7 +185,7 @@ async fn process_output_svg(
             Ok(())
         }
     } else {
-        Err(extract_error(command_output))
+        Err(extract_error(command_output).into())
     }
 }
 
@@ -182,6 +196,6 @@ fn process_output_png(
     if command_output.status.success() {
         Ok(path_to_file.png())
     } else {
-        Err(extract_error(command_output))
+        Err(extract_error(command_output).into())
     }
 }

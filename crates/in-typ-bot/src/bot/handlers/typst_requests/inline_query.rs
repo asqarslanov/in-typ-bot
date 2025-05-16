@@ -49,7 +49,7 @@ pub async fn handle(
         Err(err) => match err {
             logic::RenderError::Io(_) => todo!(),
             logic::RenderError::EmptyDocument => return Ok(()),
-            logic::RenderError::InvalidSyntax(ref errors) => {
+            logic::RenderError::Logic(ref errors) => {
                 let not_formatted = super::generate_error_text(&contents, errors, false);
                 let formatted = super::generate_error_text(&contents, errors, true);
 

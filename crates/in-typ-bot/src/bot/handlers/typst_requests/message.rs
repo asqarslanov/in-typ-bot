@@ -36,8 +36,9 @@ pub async fn handle(bot: Bot, message: Message) -> Result<(), RequestError> {
         Err(err) => match err {
             logic::RenderError::Io(_) => todo!(),
             logic::RenderError::EmptyDocument => return Ok(()),
-            logic::RenderError::InvalidSyntax(ref errors) => {
-                let text = super::generate_error_text(contents, errors, true);
+
+            logic::RenderError::Logic(ref error) => {
+                let text = super::generate_error_text(contents, error, true);
                 let _ = bot
                     .send_message(message.chat.id, text)
                     .parse_mode(ParseMode::Html)
