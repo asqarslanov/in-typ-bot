@@ -146,10 +146,8 @@ async fn compile(
     let output = Command::new("typst")
         .args([
             "compile",
-            "--diagnostic-format",
-            "short",
-            "--ppi",
-            "256",
+            "--diagnostic-format=short",
+            "--ppi=256",
             to_str(&filename_in),
             to_str(&filename_out),
         ])
