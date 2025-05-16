@@ -84,12 +84,12 @@ pub async fn render(contents: &str) -> Result<PathBuf, RenderError> {
 
     let compile_svg_output = compile(&path_to_file, OutputFileExtension::Svg).await?;
     if let Err(err) = process_output_svg(&path_to_file, compile_svg_output).await {
-        let _ = fs::remove_file(path_to_file.typ()).await;
+        _ = fs::remove_file(path_to_file.typ()).await;
         return Err(err);
     }
 
     let compile_png_output = compile(&path_to_file, OutputFileExtension::Png).await?;
-    let _ = fs::remove_file(path_to_file.typ()).await;
+    _ = fs::remove_file(path_to_file.typ()).await;
 
     process_output_png(&path_to_file, compile_png_output)
 }
@@ -107,7 +107,7 @@ fn parse_location(raw: &str) -> Option<(u32, u32)> {
 }
 
 async fn create_file(filename_typ: &Path) -> io::Result<File> {
-    let _ = fs::create_dir(TMP_DIR).await;
+    _ = fs::create_dir(TMP_DIR).await;
 
     OpenOptions::new()
         .append(true)
@@ -169,7 +169,7 @@ async fn process_output_svg(
             .take(4)
             .collect_tuple::<(_, _, _, _)>()
             .expect("svg files should contain at least 4 tags");
-        let _ = fs::remove_file(path_to_file.svg()).await;
+        _ = fs::remove_file(path_to_file.svg()).await;
 
         if matches!(
             first_tags,

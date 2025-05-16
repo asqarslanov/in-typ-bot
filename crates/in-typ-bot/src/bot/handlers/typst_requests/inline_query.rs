@@ -23,9 +23,9 @@ pub async fn handle(
             let photo = InputFile::file(&path);
 
             let cached_msg = bot.send_photo(cache_chat, photo).await?;
-            let _ = fs::remove_file(path).await;
+            _ = fs::remove_file(path).await;
 
-            let _ = bot
+            _ = bot
                 .answer_inline_query(
                     inline_query.id,
                     iter::once(InlineQueryResult::CachedPhoto(
@@ -44,7 +44,7 @@ pub async fn handle(
                 .send()
                 .await;
 
-            let _ = bot.delete_message(cache_chat, cached_msg.id).await;
+            _ = bot.delete_message(cache_chat, cached_msg.id).await;
         }
         Err(err) => match err {
             logic::RenderError::Io(_) => todo!(),
@@ -53,7 +53,7 @@ pub async fn handle(
                 let not_formatted = super::generate_error_text(&contents, errors, false);
                 let formatted = super::generate_error_text(&contents, errors, true);
 
-                let _ = bot
+                _ = bot
                     .answer_inline_query(
                         inline_query.id,
                         iter::once(InlineQueryResult::Article(InlineQueryResultArticle::new(

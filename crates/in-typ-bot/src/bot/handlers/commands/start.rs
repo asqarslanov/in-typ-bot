@@ -12,7 +12,7 @@ pub async fn handle(bot: Bot, message: Message) {
         .start()
         .format_snippet(|it| html::code_block_with_lang(it, "typst"));
 
-    let _ = bot
+    _ = bot
         .send_message(message.chat.id, text)
         .parse_mode(ParseMode::Html)
         .await

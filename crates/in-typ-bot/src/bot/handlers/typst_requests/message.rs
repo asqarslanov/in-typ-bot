@@ -23,7 +23,7 @@ pub async fn handle(bot: Bot, message: Message) -> Result<(), RequestError> {
         Ok(path) => {
             let photo = InputFile::file(&path);
 
-            let _ = bot
+            _ = bot
                 .edit_message_media(
                     reply_msg.chat.id,
                     reply_msg.id,
@@ -31,7 +31,7 @@ pub async fn handle(bot: Bot, message: Message) -> Result<(), RequestError> {
                 )
                 .await;
 
-            let _ = fs::remove_file(path).await;
+            _ = fs::remove_file(path).await;
         }
         Err(err) => match err {
             logic::RenderError::Io(_) => todo!(),
@@ -39,7 +39,7 @@ pub async fn handle(bot: Bot, message: Message) -> Result<(), RequestError> {
 
             logic::RenderError::Logic(ref error) => {
                 let text = super::generate_error_text(contents, error, true);
-                let _ = bot
+                _ = bot
                     .send_message(message.chat.id, text)
                     .parse_mode(ParseMode::Html)
                     .await;

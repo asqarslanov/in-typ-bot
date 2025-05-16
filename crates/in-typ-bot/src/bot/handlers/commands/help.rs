@@ -13,7 +13,7 @@ pub async fn handle(bot: Bot, message: Message) {
         .format_inline_snippet(html::code_inline)
         .format_clarification(html::italic);
 
-    let _ = bot
+    _ = bot
         .send_message(message.chat.id, text)
         .parse_mode(ParseMode::Html)
         .link_preview_options(LinkPreviewOptions {
