@@ -178,7 +178,7 @@ async fn process_output_svg(
                 Event::Tag("path", Type::Empty, _),
                 Event::Tag("g", Type::Empty, _),
                 Event::Tag("svg", Type::End, _),
-            )
+            ),
         ) {
             Err(RenderError::EmptyDocument)
         } else {
