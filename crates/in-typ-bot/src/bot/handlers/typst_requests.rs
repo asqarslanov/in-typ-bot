@@ -1,5 +1,5 @@
 use indoc::formatdoc;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use teloxide::utils::html;
 
 pub mod inline_query;

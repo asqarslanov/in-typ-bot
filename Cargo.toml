@@ -7,20 +7,21 @@ default-members = ["crates/in-typ-bot/"]
 version = "0.0.0"
 
 [workspace.dependencies]
-i18n = { path = "crates/i18n/" }
+const_format = "0.2.35"
 dotenvy_macro = "0.15.7"
+i18n = { path = "crates/i18n/" }
 indoc = "2.0.6"
 itertools = "0.14.0"
-strum = "0.27.1"
+strum = "0.27.2"
 svg = "0.18.0"
 teloxide = "0.13.0"
-thiserror = "2.0.12"
-tokio = "1.44.1"
+thiserror = "2.0.17"
+tokio = "1.47.1"
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
-uuid = "1.16.0"
+uuid = "1.18.1"
 
 [workspace.lints.clippy]
 all = "warn"
-pedantic = "warn"
 nursery = "warn"
+pedantic = "warn"

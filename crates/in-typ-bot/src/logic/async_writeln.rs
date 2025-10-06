@@ -1,5 +1,5 @@
 use tokio::fs::File;
-use tokio::io::{self, AsyncWriteExt};
+use tokio::io::{self, AsyncWriteExt as _};
 
 pub trait AsyncWriteln {
     async fn writeln(&mut self, contents: &[u8]) -> io::Result<()>;

@@ -1,14 +1,16 @@
 use std::path::{Path, PathBuf};
 use std::process::Output;
 
-use async_writeln::AsyncWriteln;
-use filename::{Filename, TMP_DIR};
-use itertools::Itertools;
-use svg::{node::element::tag::Type, parser::Event};
+use itertools::Itertools as _;
+use svg::node::element::tag::Type;
+use svg::parser::Event;
 use thiserror::Error;
 use tokio::fs::{self, File, OpenOptions};
 use tokio::io;
 use tokio::process::Command;
+
+use self::async_writeln::AsyncWriteln as _;
+use self::filename::{Filename, TMP_DIR};
 
 mod async_writeln;
 mod filename;

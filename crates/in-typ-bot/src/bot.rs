@@ -1,9 +1,10 @@
 use dotenvy_macro::dotenv;
-use handlers::commands::Command;
 use teloxide::RequestError;
 use teloxide::dispatching::UpdateHandler;
 use teloxide::prelude::*;
 use tracing::info;
+
+use self::handlers::commands::Command;
 
 mod common;
 mod handlers;
