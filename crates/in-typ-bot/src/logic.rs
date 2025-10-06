@@ -63,18 +63,18 @@ fn extract_error(command_output: Output) -> LogicError {
     let err_text = String::from_utf8(command_output.stderr)
         .expect("the typst CLI should output valid utf-8 to stderr");
 
-    if let Some(err_msg) = err_text.strip_prefix("error: ") {
-        LogicError::One {
+    err_text.strip_prefix("error: ").map_or_else(
+        || {
+            let processed = err_text
+                .lines()
+                .map(ErrorDetails::from)
+                .collect::<Box<[_]>>();
+            LogicError::Many(processed)
+        },
+        |err_msg| LogicError::One {
             message: Box::from(err_msg),
-        }
-    } else {
-        let processed = err_text
-            .lines()
-            .map(ErrorDetails::from)
-            .collect::<Box<[_]>>();
-
-        LogicError::Many(processed)
-    }
+        },
+    )
 }
 
 pub async fn render(contents: &str) -> Result<PathBuf, RenderError> {
