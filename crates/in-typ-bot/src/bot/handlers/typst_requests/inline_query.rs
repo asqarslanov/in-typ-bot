@@ -31,13 +31,14 @@ pub async fn handle(
                     iter::once(InlineQueryResult::CachedPhoto(
                         InlineQueryResultCachedPhoto::new(
                             Uuid::new_v4().simple().to_string(),
-                            &cached_msg
+                            cached_msg
                                 .photo()
                                 .expect("cached message should contain photos")
                                 .first()
                                 .expect("cached message should contain at least one photo")
                                 .file
-                                .id,
+                                .id
+                                .clone(),
                         ),
                     )),
                 )
