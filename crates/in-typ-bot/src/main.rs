@@ -6,7 +6,7 @@ mod logic;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
-    dotenvy::dotenv()?;
+    let _ = dotenvy::dotenv();
     tracing_subscriber::fmt::init();
     let config = Config::from_env()?;
 
