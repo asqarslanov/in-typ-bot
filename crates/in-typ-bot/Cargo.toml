@@ -4,7 +4,8 @@ version.workspace = true
 edition = "2024"
 
 [dependencies]
-dotenvy_macro = { workspace = true }
+dotenvy = { workspace = true }
+eyre = { workspace = true }
 i18n = { workspace = true }
 indoc = { workspace = true }
 itertools = { workspace = true }

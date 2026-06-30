@@ -1,26 +1,19 @@
-use dotenvy_macro::dotenv;
 use teloxide::RequestError;
 use teloxide::dispatching::UpdateHandler;
 use teloxide::prelude::*;
 use tracing::info;
 
 use self::handlers::commands::Command;
+use crate::config::Config;
 
 mod common;
 mod handlers;
 
-pub async fn run() {
-    let bot = Bot::new(dotenv!("TELOXIDE_TOKEN"));
-
-    let cache_chat = ChatId(
-        dotenv!("CACHE_CHAT_ID")
-            .to_owned()
-            .parse::<i64>()
-            .expect("chat id should be an i64"),
-    );
+pub async fn run(config: Config) {
+    let bot = Bot::new(config.teloxide_token);
 
     let mut dispatcher = Dispatcher::builder(bot, schema())
-        .dependencies(dptree::deps![cache_chat])
+        .dependencies(dptree::deps![config.cache_chat_id])
         .enable_ctrlc_handler()
         .build();
 
