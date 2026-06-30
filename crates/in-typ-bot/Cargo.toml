@@ -4,6 +4,7 @@ version.workspace = true
 edition = "2024"
 
 [dependencies]
+const_format = { workspace = true }
 dotenvy = { workspace = true }
 eyre = { workspace = true }
 i18n = { workspace = true }
