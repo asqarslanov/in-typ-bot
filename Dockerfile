@@ -1,6 +1,6 @@
 FROM rust:1.96.0-alpine3.24 AS builder
 WORKDIR /app/
-RUN apk update && apk add --no-cache musl-dev libressl-dev
+RUN apk update && apk add --no-cache libressl-static
 COPY ./ ./
 RUN cargo install --path=crates/in-typ-bot/
 
