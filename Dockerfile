@@ -1,10 +1,10 @@
-FROM rust:1.90-alpine3.22 AS builder
+FROM rust:1.96.0-alpine3.24 AS builder
 WORKDIR /app/
 RUN apk update && apk add --no-cache musl-dev libressl-dev
 COPY ./ ./
 RUN cargo install --path=crates/in-typ-bot/
 
-FROM alpine:3.22
+FROM alpine:3.24
 WORKDIR /app/
 RUN apk update && apk add --no-cache curl xz
 RUN curl -fsSL https://install.typst.community/install.sh | sh
